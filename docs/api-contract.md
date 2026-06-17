@@ -1,8 +1,17 @@
-# API Contract v0.1
+API Contract v0.2
 
-## Frontend → NLP
+Overview:
 
-Request:
+Voice Input → Transcript → Intent Extraction → Product Service → Product Display
+
+The intent extraction layer may use either:
+
+* Rule-based parser
+* LLM-based parser (OpenAI)
+
+Regardless of implementation, the output schema must remain unchanged.
+
+Intent Extraction Input:
 
 ```json
 {
@@ -10,7 +19,7 @@ Request:
 }
 ```
 
-Response:
+Intent Extraction Output:
 
 ```json
 {
@@ -21,33 +30,41 @@ Response:
 }
 ```
 
----
+Common Fields:
 
-## Common Fields
+| Field     | Type   | Required | Description          |
+| --------- | ------ | -------- | -------------------- |
+| action    | string | Yes      | User intent          |
+| category  | string | No       | Product category     |
+| color     | string | No       | Product color        |
+| priceMax  | number | No       | Maximum price filter |
+| productId | string | No       | Product identifier   |
+| quantity  | number | No       | Number of items      |
 
-| Field      | Type   | Description                    |
-|------------|--------|--------------------------------|
-| action     | string | User intent                    |
-| category   | string | Product category               |
-| color      | string | Product color                  |
-| priceMax   | number | Maximum price filter           |
-| productId  | string | Unique product identifier      |
-| quantity   | number | Number of items in cart        |
+Supported Actions:
 
----
+* filter
+* addToCart
+* removeFromCart
+* checkout
 
-## NLP → Backend
+Product Filtering API:
 
 Endpoint:
 
 ```txt
-GET /products
+POST /products/filter
 ```
 
-Example query:
+Request Body:
 
-```txt
-/products?category=shirts&color=blue&priceMax=1000
+```json
+{
+  "action": "filter",
+  "category": "shirts",
+  "color": "blue",
+  "priceMax": 1000
+}
 ```
 
 Response:
@@ -68,24 +85,28 @@ Response:
 }
 ```
 
----
+Product Object:
 
-## Backend → Frontend
+| Field    | Type   | Description        |
+| -------- | ------ | ------------------ |
+| id       | string | Product identifier |
+| title    | string | Product name       |
+| category | string | Product category   |
+| color    | string | Product color      |
+| price    | number | Product price      |
+| imageUrl | string | Product image URL  |
 
-Response format:
+Implementation Notes:
 
-```json
-{
-  "success": true,
-  "products": []
-}
-```
+* Product data is currently served from `products.js`.
+* MongoDB integration will replace `products.js` in later versions.
+* Frontend must not depend on the data source.
+* Backend must not depend on the parser implementation.
+* Parser output schema must remain stable across implementations.
 
----
+Rules:
 
-## Rules
-
-- Use the exact field names defined above.
-- Do not rename keys without updating this document.
-- All APIs must use JSON.
-- Any contract changes must be discussed during stand-up.
+* All APIs use JSON.
+* Field names must remain unchanged.
+* Contract updates must be discussed during stand-up meetings.
+* New filters require updates to both the parser and backend filtering logic.
