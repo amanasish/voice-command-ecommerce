@@ -16,13 +16,13 @@ const router = express.Router();
 // express.Router() creates a "mini app" just for handling routes.
 // We will attach this mini-router to our main app inside server.js.
 
-const { getProducts } = require("../controllers/productController");
+const { filterProducts } = require("../controllers/productController");
 // Importing the actual logic function we wrote in the controller file.
 
 // Defining the route:
-// Method: GET
-// Path:   /  (this becomes /products once we mount it in server.js)
-// Handler: getProducts function from our controller
-router.get("/", getProducts);
+// Method: POST
+// Path:   /filter  (this becomes /products/filter once we mount it in server.js)
+// Handler: filterProducts function from our controller
+router.post("/filter", filterProducts);
 
 module.exports = router;

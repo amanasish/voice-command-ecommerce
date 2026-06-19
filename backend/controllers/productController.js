@@ -1,74 +1,122 @@
 // controllers/productController.js
 //
-// WHAT IS A "CONTROLLER"?
-// A controller is just a function that contains the ACTUAL LOGIC of what
-// should happen when a particular API is called.
+// UPDATED FOR API CONTRACT v0.2
 //
-// Why separate it from routes?
-// - routes/productRoutes.js  -> only decides "which URL triggers which function"
-// - controllers/productController.js -> the function itself, doing the real work
-//
-// This separation means: if tomorrow your logic gets complex (e.g. talking to
-// MongoDB, sorting, pagination), you only touch this file. Your routes file
-// never needs to change. This is exactly what your team lead meant by
-// "controller design."
+// What changed from before:
+//   - Old endpoint was GET /products
+//   - New endpoint (per contract v0.2) is POST /products/filter
+//   - The request body now includes an "action" field (always "filter" here)
+//   - Field names (category, color, priceMax) stay the same as before --
+//     the contract explicitly says "field names must remain unchanged"
 
 const products = require("../data/products");
-// ^ We import the product array from data/products.js
-//   "../" means "go up one folder, then into data/products.js"
 
-// This function will run whenever someone calls: GET /products
-// It receives two important objects from Express automatically:
-//   req  -> the incoming "request" (contains what the caller sent)
-//   res  -> the "response" tool we use to send data back
-const getProducts = (req, res) => {
+// This function runs when: POST /products/filter is called
+// Expected request body (from contract v0.2):
+//   {
+//     "action": "filter",
+//     "category": "shirts",
+//     "color": "blue",
+//     "priceMax": 1000
+//   }
+const filterProducts = (req, res) => {
+  try {
 
-  // STEP 1: Read query parameters from the URL
-  // Example incoming URL (exactly as per contract):
-  //   /products?category=shirts&color=blue&priceMax=1000
-  //
-  // Express automatically puts everything after "?" into req.query
-  // as a plain object, like:
-  //   { category: "shirts", color: "blue", priceMax: "1000" }
-  const { category, color, priceMax } = req.query;
+    // STEP 1: Read everything from the JSON body (NOT query params anymore)
+    const { action, category, color, priceMax } = req.body;
 
-  // STEP 2: Start with the full product list, then narrow it down
-  let filteredProducts = products;
+    // STEP 2: Validate the action field.
+    // The contract marks "action" as REQUIRED.
+    // This endpoint should only ever receive action = "filter".
+    if (!action) {
+      return res.status(400).json({
+        success: false,
+        message: "action field is required"
+      });
+    }
 
-  // STEP 3: Apply category filter, only if it was provided in the URL
-  if (category) {
-    filteredProducts = filteredProducts.filter(
-      (product) => product.category.toLowerCase() === category.toLowerCase()
-    );
-    // .toLowerCase() makes sure "Shirts" and "shirts" both match correctly,
-    // since voice/NLP output might not always match exact casing.
+    // Reject unsupported actions.
+    // Examples:
+    //   addToCart
+    //   removeFromCart
+    //   checkout
+    if (action !== "filter") {
+      return res.status(400).json({
+        success: false,
+        message: 'This endpoint only supports action "filter"'
+      });
+    }
+
+    // STEP 3: Start with the complete product list.
+    // Every filter below will gradually narrow this list down.
+    let filteredProducts = products;
+
+    // STEP 4: Apply category filter.
+    // trim() removes accidental spaces from NLP output.
+    // Example:
+    //   " shirts " -> "shirts"
+    if (category) {
+      filteredProducts = filteredProducts.filter(
+        (product) =>
+          product.category.toLowerCase() === category.trim().toLowerCase()
+      );
+    }
+
+    // STEP 5: Apply color filter.
+    // trim() removes accidental spaces from NLP output.
+    // Example:
+    //   " blue " -> "blue"
+    if (color) {
+      filteredProducts = filteredProducts.filter(
+        (product) =>
+          product.color.toLowerCase() === color.trim().toLowerCase()
+      );
+    }
+
+    // STEP 6: Apply maximum price filter.
+    //
+    // Using !== undefined/null because:
+    // priceMax = 0 is technically valid.
+    // if(priceMax) would incorrectly skip 0.
+    if (priceMax !== undefined && priceMax !== null) {
+
+      const maxPriceNumber = Number(priceMax);
+
+      // Validate that priceMax is actually a number.
+      // Example:
+      //   "1000" -> valid
+      //   "abc"  -> invalid
+      if (isNaN(maxPriceNumber)) {
+        return res.status(400).json({
+          success: false,
+          message: "priceMax must be a valid number"
+        });
+      }
+
+      filteredProducts = filteredProducts.filter(
+        (product) => product.price <= maxPriceNumber
+      );
+    }
+
+    // STEP 7: Send response exactly as defined in API Contract v0.2
+    return res.status(200).json({
+      success: true,
+      products: filteredProducts
+    });
+
+  } catch (error) {
+
+    console.error("Filter Products Error:", error);
+
+    // Generic server error response.
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error"
+    });
   }
-
-  // STEP 4: Apply color filter, only if provided
-  if (color) {
-    filteredProducts = filteredProducts.filter(
-      (product) => product.color.toLowerCase() === color.toLowerCase()
-    );
-  }
-
-  // STEP 5: Apply price filter, only if provided
-  // Note: query params arrive as STRINGS, even numbers like "1000".
-  // We must convert it to a real number using Number(), otherwise
-  // comparisons like 899 <= "1000" can behave unexpectedly.
-  if (priceMax) {
-    const maxPriceNumber = Number(priceMax);
-    filteredProducts = filteredProducts.filter(
-      (product) => product.price <= maxPriceNumber
-    );
-  }
-
-  // STEP 6: Send the response back in EXACTLY the shape the contract defines:
-  //   { "success": true, "products": [...] }
-  res.json({
-    success: true,
-    products: filteredProducts
-  });
 };
 
-// Export this function so routes/productRoutes.js can use it
-module.exports = { getProducts };
+// Export controller function for use in routes/productRoutes.js
+module.exports = {
+  filterProducts
+};
