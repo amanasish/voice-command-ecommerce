@@ -1,4 +1,4 @@
-API Contract v0.3
+API Contract v0.4
 
 Overview:
 
@@ -160,6 +160,98 @@ Product Object:
 | color    | string | Product color      |
 | price    | number | Product price      |
 | imageUrl | string | Product image URL  |
+
+-----------------------------------------------------------------------
+-----------------------------------------------------------------------
+
+Database Collections (MVP)
+
+The backend will maintain the following collections:
+
+* users
+* products
+* cart
+* orders
+
+Collection: users
+
+```json
+{
+  "_id": "u101",
+  "name": "John Doe",
+  "email": "john@example.com",
+  "password": "hashed_password",
+}
+```
+
+Collection: products
+
+```json
+{
+  "_id": "p101",
+  "title": "Blue Cotton Shirt",
+  "category": "shirts",
+  "color": "blue",
+  "price": 899,
+  "imageUrl": "/images/p101.jpg",
+  "stock": 20
+}
+```
+
+Collection: cart
+
+Each user owns a separate cart.
+
+```json
+{
+  "_id": "c101",
+  "userId": "u101",
+  "items": [
+    {
+      "productId": "p101",
+      "quantity": 2
+    }
+  ],
+  "updatedAt": "2026-06-18T12:00:00Z"
+}
+```
+
+Collection: orders
+
+```json
+{
+  "_id": "o101",
+  "userId": "u101",
+  "items": [
+    {
+      "productId": "p101",
+      "quantity": 2,
+      "price": 899
+    }
+  ],
+  "totalAmount": 1798,
+  "status": "placed",
+  "createdAt": "2026-06-18T12:30:00Z"
+}
+```
+
+Relationships:
+
+* cart.userId → users._id
+* cart.items.productId → products._id
+* orders.userId → users._id
+* orders.items.productId → products._id
+
+Notes:
+
+* Each user has exactly one active cart.
+* Product data is currently served from `products.js`.
+* MongoDB collections will replace `products.js` in future versions.
+* User authentication is out of scope for the MVP; a demo user may be hardcoded during development.
+
+-----------------------------------------------------------------------
+-----------------------------------------------------------------------
+
 
 Implementation Notes:
 
