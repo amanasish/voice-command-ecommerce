@@ -1,4 +1,4 @@
-API Contract v0.4
+API Contract v0.5
 
 Overview:
 
@@ -283,3 +283,81 @@ Rules:
 * Field names must remain unchanged.
 * Contract updates must be discussed during stand-up meetings.
 * New filters require updates to both the parser and backend filtering logic.
+
+
+
+Frontend Integration
+
+The NLP module is integrated directly into the frontend codebase and does not expose a separate API.
+
+Flow:
+
+```txt
+Microphone Input → Transcript → NLP Parser → Intent JSON → Backend API → UI Update
+```
+
+Entry Point:
+
+```js
+import { parse } from "./nlp/parserTypes.js";
+```
+
+Usage:
+
+```js
+const intent = await parse(transcript);
+```
+
+Example:
+
+Input:
+
+```txt
+show me blue shirts under 1000
+```
+
+Output:
+
+```json
+{
+  "action": "filter",
+  "category": "shirts",
+  "color": "blue",
+  "priceMax": 1000
+}
+```
+
+The frontend is responsible for mapping the generated intent to the corresponding backend endpoint.
+
+Parser Entry Point
+
+Frontend applications must only import:
+
+```txt
+parserTypes.js
+```
+
+Internal parser files are implementation details and must not be imported directly.
+
+Do not import:
+
+* intentParser.js
+* openaiParser.js
+* patterns.js
+* constants.js
+
+Parser Strategy
+
+`parserTypes.js` acts as the parser abstraction layer.
+
+Current implementation:
+
+* Rule-based parser
+
+Future implementation:
+
+* OpenAI
+* Gemini
+* Other LLM providers
+
+The parser implementation may change in future versions, but the output schema must remain unchanged.
