@@ -1,10 +1,7 @@
-
 // controllers/checkoutController.js
 //
-// Yeh file "checkout" action ki logic rakhti hai.
-// Yeh tumhare contract v0.2 ke Supported Actions list mein hai,
-// aur original problem statement PDF mein bhi "Cart/Checkout Control"
-// feature mention kiya gaya tha.
+// FIXED FOR API CONTRACT v0.5
+// Sirf error format change hua hai: "message" se "error".
 
 const cart = require("../data/cart");
 
@@ -18,23 +15,22 @@ const checkout = (req, res) => {
   if (!action) {
     return res.status(400).json({
       success: false,
-      message: "action field is required"
+      error: "action field is required"
     });
   }
 
   if (action !== "checkout") {
     return res.status(400).json({
       success: false,
-      message: `This endpoint only supports action "checkout", received "${action}"`
+      error: `This endpoint only supports action "checkout", received "${action}"`
     });
   }
 
   // STEP 2: Agar cart khali hai, checkout allow nahi karo.
-  // Yeh ek real-world edge case hai jo demo ke time aa sakta hai.
   if (cart.length === 0) {
     return res.status(400).json({
       success: false,
-      message: "Cart is empty, nothing to checkout"
+      error: "Cart is empty, nothing to checkout"
     });
   }
 
@@ -42,27 +38,17 @@ const checkout = (req, res) => {
   const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
   // STEP 4: Order ka summary banao.
-  // Real app mein yeh database mein save hota hai with unique order ID.
-  // Abhi ke liye mock checkout hai -- order confirm karo aur cart khali karo.
   const orderSummary = {
     orderId: "ORD" + Date.now(),
-    // Date.now() current time deta hai milliseconds mein -- isse
-    // har order ko ek alag-alag jaisa ID mil jaata hai, database
-    // ke bina bhi.
     items: [...cart],
-    // [...cart] cart ka EK COPY banata hai. Copy banana zaroori hai
-    // kyunki hum agle step mein asli cart ko khali karne wale hain,
-    // lekin response mein yeh dikhana hai ki kya order hua tha.
     total: total
   };
 
-  // STEP 5: Checkout ke baad cart khali kar do (order successfully place ho gaya)
+  // STEP 5: Checkout ke baad cart khali kar do
   cart.length = 0;
-  // "cart = []" nahi likha, kyunki wo ek NAYA array banata hai aur
-  // sirf is file ke andar wala reference badalta hai. data/cart.js ka
-  // asli array waisa hi reh jaata. "cart.length = 0" existing array ko
-  // hi andar se khali karta hai, isliye sab jagah cart khali dikhega.
 
+  // NOTE: Yeh success response hai, isliye "message" field rakhna theek
+  // hai -- contract ka "error" field sirf success: false ke saath chahiye.
   res.json({
     success: true,
     message: "Order placed successfully",
