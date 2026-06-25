@@ -1,3 +1,149 @@
+# API Contract v0.6 Update
+
+## Changes from v0.5
+
+### 1. Success Response Clarification
+
+All successful responses must contain:
+
+```json
+{
+  "success": true
+}
+```
+
+Additional fields are endpoint specific.
+
+Examples:
+
+#### Product Filter
+
+```json
+{
+  "success": true,
+  "products": []
+}
+```
+
+#### View Cart
+
+```json
+{
+  "success": true,
+  "cart": [],
+  "total": 0
+}
+```
+
+#### Add To Cart
+
+```json
+{
+  "success": true,
+  "cart": []
+}
+```
+
+#### Remove From Cart
+
+```json
+{
+  "success": true,
+  "cart": []
+}
+```
+
+#### Checkout
+
+```json
+{
+  "success": true,
+  "message": "Order placed successfully",
+  "order": {}
+}
+```
+
+The previously shown generic `data` field is illustrative only and is not required.
+
+---
+
+### 2. Error Response Standardization
+
+All error responses must follow:
+
+```json
+{
+  "success": false,
+  "error": "Error message"
+}
+```
+
+---
+
+### 3. Products Collection Clarification
+
+MongoDB generates an internal `_id`.
+
+For API compatibility products must also maintain a public `id` field.
+
+Example:
+
+```json
+{
+  "_id": "ObjectId(...)",
+  "id": "p101",
+  "title": "Blue Cotton Shirt",
+  "category": "shirts",
+  "color": "blue",
+  "price": 899,
+  "imageUrl": "/images/p101.jpg",
+  "stock": 20
+}
+```
+
+Rules:
+
+* Frontend uses `id`
+* API responses expose `id`
+* `_id` remains internal
+
+---
+
+### 4. Relationship Clarification
+
+```text
+cart.userId → users._id
+cart.items.productId → products.id
+
+orders.userId → users._id
+orders.items.productId → products.id
+```
+
+---
+
+### 5. MongoDB Migration Note
+
+* MongoDB Atlas connection completed.
+* Product filtering is being migrated from products.js to MongoDB.
+* Current API request/response formats remain unchanged.
+* Frontend integration should not depend on storage implementation.
+
+---
+
+### Version
+
+Contract Version: v0.6
+
+Reason:
+
+* MongoDB schema clarification
+* Response format clarification
+* No breaking API changes
+
+
+
+
+
 API Contract v0.5
 
 Overview:
