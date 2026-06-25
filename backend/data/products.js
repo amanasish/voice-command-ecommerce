@@ -6,10 +6,7 @@
 // This lets us build and test our API TODAY without waiting for the database.
 //
 // IMPORTANT: Every field name here matches EXACTLY what is written in
-// docs/api-contract.md under "NLP -> Backend" response section:
-//   id, title, category, color, price, imageUrl
-// We do NOT invent our own names like "productName" or "cost" -- that would
-// break the contract and cause integration conflicts with frontend/NLP.
+// docs/api-contract.md -- id, title, category, color, price, imageUrl, stock
 
 const products = [
   {
@@ -18,7 +15,8 @@ const products = [
     category: "shirts",
     color: "blue",
     price: 899,
-    imageUrl: "/images/p101.jpg"
+    imageUrl: "/images/p101.jpg",
+    stock: 20
   },
   {
     id: "p102",
@@ -26,7 +24,8 @@ const products = [
     category: "jeans",
     color: "red",
     price: 1299,
-    imageUrl: "/images/p102.jpg"
+    imageUrl: "/images/p102.jpg",
+    stock: 15
   },
   {
     id: "p103",
@@ -34,7 +33,8 @@ const products = [
     category: "shirts",
     color: "blue",
     price: 750,
-    imageUrl: "/images/p103.jpg"
+    imageUrl: "/images/p103.jpg",
+    stock: 25
   },
   {
     id: "p104",
@@ -42,7 +42,8 @@ const products = [
     category: "kurtas",
     color: "black",
     price: 1100,
-    imageUrl: "/images/p104.jpg"
+    imageUrl: "/images/p104.jpg",
+    stock: 10
   },
   {
     id: "p105",
@@ -50,7 +51,8 @@ const products = [
     category: "kurtas",
     color: "blue",
     price: 1200,
-    imageUrl: "/images/p105.jpg"
+    imageUrl: "/images/p105.jpg",
+    stock: 8
   },
   {
     id: "p106",
@@ -58,7 +60,8 @@ const products = [
     category: "shirts",
     color: "green",
     price: 499,
-    imageUrl: "/images/p106.jpg"
+    imageUrl: "/images/p106.jpg",
+    stock: 30
   },
   {
     id: "p107",
@@ -66,7 +69,8 @@ const products = [
     category: "shirts",
     color: "blue",
     price: 1500,
-    imageUrl: "/images/p107.jpg"
+    imageUrl: "/images/p107.jpg",
+    stock: 5
   }
 ];
 
