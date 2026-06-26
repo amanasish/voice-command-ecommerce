@@ -4,7 +4,7 @@ import {
   removeFromCart,
   getCart,
   checkout,
-} from "./mockApi.js";
+} from "./apiClient.js";
 
 export async function executeIntent(intent, context = {}) {
   if (!intent?.action) {

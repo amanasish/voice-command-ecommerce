@@ -1,14 +1,22 @@
 import { createContext, useContext, useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { parse } from "../nlp/parserTypes.js";
 import { executeIntent } from "../api/intentRouter.js";
+import { applyActionResult } from "../api/actionHandlers.js";
 import { useCart } from "./CartContext.jsx";
 import { useProducts } from "./ProductContext.jsx";
 
 const VoiceContext = createContext(null);
 
 export function VoiceProvider({ children }) {
+  const navigate = useNavigate();
   const { refreshCart, openCart, lastCartProductId } = useCart();
-  const { setProducts, selectedProductId } = useProducts();
+  const {
+    setProducts,
+    selectedProductId,
+    setSearchLabel,
+    requestScrollToProducts,
+  } = useProducts();
 
   const [lastIntent, setLastIntent] = useState(null);
   const [lastResult, setLastResult] = useState(null);
@@ -35,52 +43,31 @@ export function VoiceProvider({ children }) {
         });
         setLastResult(result);
 
-        if (!result.success) {
-          setFeedback({ type: "error", message: result.error });
-          return;
-        }
-
-        switch (intent.action) {
-          case "filter":
-            setProducts(result.products);
-            setFeedback({
-              type: "success",
-              message: `Found ${result.products.length} product(s)`,
-            });
-            break;
-          case "addToCart":
-          case "removeFromCart":
-            refreshCart();
-            setFeedback({
-              type: "success",
-              message:
-                intent.action === "addToCart"
-                  ? "Item added to cart"
-                  : "Item removed from cart",
-            });
-            break;
-          case "viewCart":
-            refreshCart();
-            openCart();
-            setFeedback({ type: "success", message: "Showing your cart" });
-            break;
-          case "checkout":
-            refreshCart();
-            setFeedback({
-              type: "success",
-              message: `Order placed! ID: ${result.order.orderId}`,
-            });
-            break;
-          default:
-            setFeedback({ type: "success", message: "Command processed" });
-        }
+        const feedbackResult = applyActionResult(intent, result, {
+          setProducts,
+          setSearchLabel,
+          refreshCart,
+          openCart,
+          navigate,
+          requestScrollToProducts,
+        });
+        setFeedback(feedbackResult);
       } catch (err) {
         setFeedback({ type: "error", message: err.message || "Processing failed" });
       } finally {
         setProcessing(false);
       }
     },
-    [selectedProductId, lastCartProductId, refreshCart, openCart, setProducts]
+    [
+      selectedProductId,
+      lastCartProductId,
+      refreshCart,
+      openCart,
+      setProducts,
+      setSearchLabel,
+      requestScrollToProducts,
+      navigate,
+    ]
   );
 
   const clearFeedback = useCallback(() => setFeedback(null), []);

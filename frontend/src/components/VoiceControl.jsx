@@ -11,6 +11,7 @@ export default function VoiceControl() {
     startListening,
     stopListening,
     transcript,
+    interimTranscript,
     setManualTranscript,
   } = useSpeechRecognition();
 
@@ -18,13 +19,17 @@ export default function VoiceControl() {
   const [manualInput, setManualInput] = useState("");
 
   const handleProcess = async () => {
-    const text = transcript || manualInput;
+    const text = transcript || manualInput || displayTranscript;
     await processTranscript(text);
   };
 
-  const handleToggleMic = () => {
+  const handleToggleMic = async () => {
     if (isListening) {
+      const text = (transcript + " " + interimTranscript).trim();
       stopListening();
+      if (text) {
+        await processTranscript(text);
+      }
     } else {
       startListening();
     }
@@ -97,8 +102,8 @@ export default function VoiceControl() {
 
       <div className="voice-hints">
         <p>
-          Try: &quot;show me blue shirts under 1000&quot; · &quot;add product p101 to
-          cart&quot; · &quot;show my cart&quot; · &quot;checkout&quot;
+          Try: &quot;show me blue shirts&quot; · &quot;add product p101 to cart&quot; ·
+          &quot;show my cart&quot; · &quot;checkout&quot;
         </p>
       </div>
     </div>

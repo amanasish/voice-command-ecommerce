@@ -206,6 +206,13 @@ textarea {
 /* Products */
 .products-section h2 {
   margin-bottom: 1rem;
+  text-transform: capitalize;
+}
+
+.product-count {
+  font-size: 0.9rem;
+  font-weight: 400;
+  color: #6b7280;
 }
 
 .product-grid {

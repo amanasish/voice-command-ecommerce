@@ -4,21 +4,51 @@ import {
   PRICE_RANGE_REGEX,
   QUANTITY_REGEX,
   PRODUCT_ID_REGEX,
+  ADD_TO_CART_REGEX,
+  REMOVE_FROM_CART_REGEX,
+  VIEW_CART_REGEX,
+  CHECKOUT_REGEX,
 } from "./patterns.js";
 
-export function parseIntent(transcript) {
-  const text = transcript.toLowerCase();
-  const intent = {};
+// Specific actions first — filter's "show" must not beat "show my cart"
+const ACTION_PRIORITY = [
+  "viewCart",
+  "addToCart",
+  "removeFromCart",
+  "checkout",
+  "filter",
+];
 
-  for (const action in ACTIONS) {
+function normalizeTranscript(transcript) {
+  return transcript
+    .toLowerCase()
+    .trim()
+    .replace(/[.,!?]+$/, "")
+    .replace(/\s+/g, " ");
+}
+
+function detectAction(text) {
+  if (VIEW_CART_REGEX.test(text)) return "viewCart";
+  if (ADD_TO_CART_REGEX.test(text)) return "addToCart";
+  if (REMOVE_FROM_CART_REGEX.test(text)) return "removeFromCart";
+  if (CHECKOUT_REGEX.test(text)) return "checkout";
+
+  for (const action of ACTION_PRIORITY) {
     for (const phrase of ACTIONS[action]) {
       if (text.includes(phrase)) {
-        intent.action = action;
-        break;
+        return action;
       }
     }
-    if (intent.action) break;
   }
+
+  return null;
+}
+
+export function parseIntent(transcript) {
+  const text = normalizeTranscript(transcript);
+  const intent = {};
+
+  intent.action = detectAction(text);
 
   for (const category of CATEGORIES) {
     if (text.includes(category)) {
@@ -46,8 +76,21 @@ export function parseIntent(transcript) {
   const quantity = text.match(QUANTITY_REGEX)?.[1];
   if (quantity) intent.quantity = Number(quantity);
 
-  const productId = text.match(PRODUCT_ID_REGEX)?.[1];
+  const productIdMatch = text.match(PRODUCT_ID_REGEX);
+  const productId = productIdMatch?.[1] || productIdMatch?.[2];
   if (productId) intent.productId = productId;
+
+  if (!intent.action) {
+    if (intent.productId && /\badd\b/.test(text) && /\bto cart\b/.test(text)) {
+      intent.action = "addToCart";
+    } else if (
+      intent.category ||
+      intent.color ||
+      intent.priceMax != null
+    ) {
+      intent.action = "filter";
+    }
+  }
 
   return intent;
 }
