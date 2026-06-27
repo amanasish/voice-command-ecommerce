@@ -51,7 +51,7 @@ const products = [
     category: "kurtas",
     color: "blue",
     price: 1200,
-    imageUrl: "/images/p105.jpg",
+    imageUrl: "/images/p105.jpeg",
     stock: 8
   },
   {

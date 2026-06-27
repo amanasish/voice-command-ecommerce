@@ -15,6 +15,11 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Serves files inside the "public" folder directly via URL.
+// Example: public/images/p101.jpg becomes accessible at:
+//   http://localhost:3000/images/p101.jpg
+app.use(express.static("public"));
+
 app.use("/products", productRoutes);
 app.use("/cart", cartRoutes);
 app.use("/checkout", checkoutRoutes);
