@@ -10,7 +10,7 @@ const VoiceContext = createContext(null);
 
 export function VoiceProvider({ children }) {
   const navigate = useNavigate();
-  const { refreshCart, openCart, lastCartProductId } = useCart();
+  const { lastCartProductId, updateCartFromResult, openCart } = useCart();
   const {
     setProducts,
     selectedProductId,
@@ -43,10 +43,10 @@ export function VoiceProvider({ children }) {
         });
         setLastResult(result);
 
-        const feedbackResult = applyActionResult(intent, result, {
+        const feedbackResult = await applyActionResult(intent, result, {
           setProducts,
           setSearchLabel,
-          refreshCart,
+          updateCartFromResult,
           openCart,
           navigate,
           requestScrollToProducts,
@@ -61,7 +61,7 @@ export function VoiceProvider({ children }) {
     [
       selectedProductId,
       lastCartProductId,
-      refreshCart,
+      updateCartFromResult,
       openCart,
       setProducts,
       setSearchLabel,

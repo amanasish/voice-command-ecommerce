@@ -6,11 +6,11 @@ export function buildSearchLabel(intent) {
   return parts.length ? parts.join(" ") : "All products";
 }
 
-export function applyActionResult(intent, result, helpers) {
+export async function applyActionResult(intent, result, helpers) {
   const {
     setProducts,
     setSearchLabel,
-    refreshCart,
+    updateCartFromResult,
     openCart,
     navigate,
     requestScrollToProducts,
@@ -31,20 +31,20 @@ export function applyActionResult(intent, result, helpers) {
       };
 
     case "addToCart":
-      refreshCart();
+      updateCartFromResult(result);
       return { type: "success", message: "Item added to cart" };
 
     case "removeFromCart":
-      refreshCart();
+      updateCartFromResult(result);
       return { type: "success", message: "Item removed from cart" };
 
     case "viewCart":
-      refreshCart();
+      updateCartFromResult(result);
       openCart();
       return { type: "success", message: "Showing your cart" };
 
     case "checkout":
-      refreshCart();
+      updateCartFromResult({ cart: [] });
       navigate?.("/checkout");
       return {
         type: "success",

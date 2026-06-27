@@ -1,6 +1,6 @@
 import { useVoice } from "../context/VoiceContext.jsx";
 import { dummyUser } from "../data/dummyProducts.js";
-import { getLastOrder } from "../api/mockApi.js";
+import { getLastOrder } from "../api/apiClient.js";
 
 export default function Checkout() {
   const { lastResult, processTranscript } = useVoice();

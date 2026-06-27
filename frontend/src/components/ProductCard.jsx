@@ -1,18 +1,18 @@
 import { useProducts } from "../context/ProductContext.jsx";
 import { useCart } from "../context/CartContext.jsx";
-import { addToCart } from "../api/mockApi.js";
+import { addToCart } from "../api/apiClient.js";
 
 export default function ProductCard({ product }) {
   const { selectProduct, selectedProductId } = useProducts();
-  const { refreshCart } = useCart();
+  const { updateCartFromResult } = useCart();
 
   const isSelected = selectedProductId === product.id;
 
   const handleAddToCart = async () => {
     selectProduct(product.id);
-    const result = addToCart({ productId: product.id, quantity: 1 });
+    const result = await addToCart({ productId: product.id, quantity: 1 });
     if (result.success) {
-      refreshCart();
+      updateCartFromResult(result);
     }
   };
 
