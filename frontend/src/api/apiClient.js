@@ -3,6 +3,10 @@ import * as mockApi from "./mockApi.js";
 const USE_MOCK = import.meta.env.VITE_USE_MOCK !== "false";
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
+if (import.meta.env.DEV) {
+  console.log(`[apiClient] mode: ${USE_MOCK ? "mock" : `backend (${API_URL})`}`);
+}
+
 let lastOrder = null;
 
 function normalizeImageUrl(imageUrl) {
