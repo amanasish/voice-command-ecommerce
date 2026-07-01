@@ -67,16 +67,3 @@ if (productId) {
 
   return intent;
 }
-
-
-console.log("Price Max");
-console.log("show shirts under 1000".match(PRICE_MAX_REGEX));
-
-console.log("Price Range");
-console.log("show shirts between 500 and 1000".match(PRICE_RANGE_REGEX));
-
-console.log("Quantity");
-console.log("add 2 items".match(QUANTITY_REGEX));
-
-console.log("Product Id");
-console.log("add product p101".match(PRODUCT_ID_REGEX));

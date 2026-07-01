@@ -1,5 +1,9 @@
 import { parse } from "../parserTypes.js";
 
-console.log(await parse("show me blue shirts under 1000"));
+const intent = await parse("show me diwali outfits");
 
-console.log(await parse("checkout now"));
+if (!intent || intent.action !== "filter") {
+  throw new Error(`Expected filter intent, got ${JSON.stringify(intent)}`);
+}
+
+console.log(intent);
