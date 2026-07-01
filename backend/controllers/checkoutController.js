@@ -1,59 +1,93 @@
+
 // controllers/checkoutController.js
 //
-// FIXED FOR API CONTRACT v0.5
-// Sirf error format change hua hai: "message" se "error".
+// Checkout Controller
+// Saves order in MongoDB and clears the user's cart.
 
-const cart = require("../data/cart");
+const Cart = require("../models/Cart");
+const Product = require("../models/Product");
+const Order = require("../models/Order");
 
-// Yeh function chalega jab: POST /checkout call hoga
-// Expected request body: { "action": "checkout" }
-const checkout = (req, res) => {
+const DEMO_USER_ID = "u101";
 
-  const { action } = req.body;
+const checkout = async (req, res) => {
+  try {
+    const { action } = req.body;
 
-  // STEP 1: action field check karo
-  if (!action) {
-    return res.status(400).json({
+    // Validate action
+    if (!action) {
+      return res.status(400).json({
+        success: false,
+        error: "action field is required",
+      });
+    }
+
+    if (action !== "checkout") {
+      return res.status(400).json({
+        success: false,
+        error: `This endpoint only supports action "checkout", received "${action}"`,
+      });
+    }
+
+    // Find user's cart
+    const cart = await Cart.findOne({ userId: DEMO_USER_ID });
+
+    if (!cart || cart.items.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: "Cart is empty, nothing to checkout",
+      });
+    }
+
+    // Build order items and calculate total
+    const orderItems = [];
+    let totalAmount = 0;
+
+    for (const item of cart.items) {
+      const product = await Product.findOne({ id: item.productId });
+
+      if (!product) continue;
+
+      orderItems.push({
+        productId: item.productId,
+        quantity: item.quantity,
+        price: product.price,
+      });
+
+      totalAmount += product.price * item.quantity;
+    }
+
+    // Save order
+    const order = await Order.create({
+      userId: DEMO_USER_ID,
+      items: orderItems,
+      totalAmount,
+      status: "placed",
+    });
+
+    // Clear cart
+    cart.items = [];
+    await cart.save();
+
+    return res.json({
+      success: true,
+      message: "Order placed successfully",
+      order: {
+        orderId: order._id,
+        items: orderItems,
+        total: totalAmount,
+        status: order.status,
+      },
+    });
+  } catch (error) {
+    console.error("Checkout Error:", error);
+
+    return res.status(500).json({
       success: false,
-      error: "action field is required"
+      error: "Internal Server Error",
     });
   }
-
-  if (action !== "checkout") {
-    return res.status(400).json({
-      success: false,
-      error: `This endpoint only supports action "checkout", received "${action}"`
-    });
-  }
-
-  // STEP 2: Agar cart khali hai, checkout allow nahi karo.
-  if (cart.length === 0) {
-    return res.status(400).json({
-      success: false,
-      error: "Cart is empty, nothing to checkout"
-    });
-  }
-
-  // STEP 3: Total price calculate karo
-  const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-
-  // STEP 4: Order ka summary banao.
-  const orderSummary = {
-    orderId: "ORD" + Date.now(),
-    items: [...cart],
-    total: total
-  };
-
-  // STEP 5: Checkout ke baad cart khali kar do
-  cart.length = 0;
-
-  // NOTE: Yeh success response hai, isliye "message" field rakhna theek
-  // hai -- contract ka "error" field sirf success: false ke saath chahiye.
-  res.json({
-    success: true,
-    message: "Order placed successfully",
-    order: orderSummary
-  });
 };
 
 module.exports = { checkout };
+
