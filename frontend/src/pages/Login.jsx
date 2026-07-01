@@ -1,4 +1,6 @@
 import { Link } from "react-router-dom";
+import { useState } from "react";
+import { loginUser } from "../api/authApi.js";
 
 const styles = {
   page: {
@@ -108,6 +110,41 @@ const styles = {
 };
 
 export default function Login() {
+  const [form, setForm] = useState({
+    email: "",
+    password: "",
+    rememberMe: false,
+  });
+  const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  function handleChange(event) {
+    const { name, value, type, checked } = event.target;
+    setForm((current) => ({
+      ...current,
+      [name]: type === "checkbox" ? checked : value,
+    }));
+  }
+
+  async function handleSubmit(event) {
+    event.preventDefault();
+    setLoading(true);
+    setMessage("");
+
+    try {
+      const result = await loginUser({
+        email: form.email,
+        password: form.password,
+        rememberMe: form.rememberMe,
+      });
+      setMessage(result.message || "Login successful");
+    } catch (error) {
+      setMessage(error.message || "Login failed");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
     <div style={styles.page}>
       <section style={styles.panel}>
@@ -126,16 +163,19 @@ export default function Login() {
           <h2 style={styles.title}>Login</h2>
           <p style={styles.subtitle}>Enter your details to continue.</p>
 
-          <form>
+          <form onSubmit={handleSubmit}>
             <div style={styles.field}>
               <label style={styles.label} htmlFor="email">
                 Email
               </label>
               <input
                 id="email"
+                name="email"
                 type="email"
                 placeholder="you@example.com"
                 style={styles.input}
+                value={form.email}
+                onChange={handleChange}
               />
             </div>
 
@@ -145,15 +185,23 @@ export default function Login() {
               </label>
               <input
                 id="password"
+                name="password"
                 type="password"
                 placeholder="Enter your password"
                 style={styles.input}
+                value={form.password}
+                onChange={handleChange}
               />
             </div>
 
             <div style={styles.row}>
               <label style={{ display: "flex", gap: "0.45rem", alignItems: "center" }}>
-                <input type="checkbox" />
+                <input
+                  name="rememberMe"
+                  type="checkbox"
+                  checked={form.rememberMe}
+                  onChange={handleChange}
+                />
                 Remember me
               </label>
               <Link to="/" style={{ color: "#4c1d95", fontWeight: 600 }}>
@@ -161,10 +209,16 @@ export default function Login() {
               </Link>
             </div>
 
-            <button type="submit" style={styles.button}>
-              Sign in
+            <button type="submit" style={styles.button} disabled={loading}>
+              {loading ? "Signing in..." : "Sign in"}
             </button>
           </form>
+
+          {message ? (
+            <p style={{ marginTop: "1rem", color: "#4c1d95", fontWeight: 600 }}>
+              {message}
+            </p>
+          ) : null}
 
           <p style={styles.footer}>
             New here? <Link to="/register" style={{ color: "#4c1d95", fontWeight: 700 }}>Create an account</Link>

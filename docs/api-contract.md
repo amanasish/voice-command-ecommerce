@@ -1,3 +1,201 @@
+# API Contract v0.7 Update
+
+## Changes from v0.6
+
+### 1. AI Parser Intent Schema Update
+
+The Groq-based AI parser now returns an updated intent object.  
+Backend must be able to consume the following fields:
+
+```json
+{
+  "action": "filter",
+  "category": "shirts",
+  "occasion": "diwali",
+  "color": "blue",
+  "priceMin": 500,
+  "priceMax": 1000,
+  "quantity": null,
+  "productId": null
+}
+```
+
+### Supported Actions
+
+- `filter`
+- `addToCart`
+- `removeFromCart`
+- `checkout`
+- `viewCart`
+
+---
+
+### 2. Common Intent Fields
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| action | string | Yes | User intent |
+| category | string | No | Product category |
+| occasion | string | No | Occasion/event filter such as party, wedding, festive, diwali |
+| color | string | No | Product color |
+| priceMin | number | No | Minimum price filter |
+| priceMax | number | No | Maximum price filter |
+| productId | string | No | Product identifier |
+| quantity | number | No | Number of items |
+
+---
+
+### 3. Product Filtering Request Body
+
+Backend should accept the updated filter payload:
+
+```json
+{
+  "action": "filter",
+  "category": "shirts",
+  "occasion": "diwali",
+  "color": "blue",
+  "priceMin": 500,
+  "priceMax": 1000
+}
+```
+
+---
+
+### 4. Product Schema Clarification
+
+To support occasion-based filtering later, product records may include an `occasion` field:
+
+```json
+{
+  "_id": "ObjectId(...)",
+  "id": "p101",
+  "title": "Blue Cotton Shirt",
+  "category": "shirts",
+  "occasion": ["diwali", "party"],
+  "color": "blue",
+  "price": 899,
+  "imageUrl": "/images/p101.jpg",
+  "stock": 20
+}
+```
+
+Rules:
+- Frontend uses `id`
+- API responses expose `id`
+- `_id` remains internal
+
+---
+
+### 5. Response Format Rules
+
+#### Success Response
+All successful responses must include:
+
+```json
+{
+  "success": true
+}
+```
+
+Additional fields are endpoint specific.
+
+Examples:
+
+**Product Filter**
+```json
+{
+  "success": true,
+  "products": []
+}
+```
+
+**View Cart**
+```json
+{
+  "success": true,
+  "cart": [],
+  "total": 0
+}
+```
+
+**Add To Cart**
+```json
+{
+  "success": true,
+  "cart": []
+}
+```
+
+**Remove From Cart**
+```json
+{
+  "success": true,
+  "cart": []
+}
+```
+
+**Checkout**
+```json
+{
+  "success": true,
+  "message": "Order placed successfully",
+  "order": {}
+}
+```
+
+#### Error Response
+All error responses must follow:
+
+```json
+{
+  "success": false,
+  "error": "Error message"
+}
+```
+
+---
+
+### 6. Relationship Clarification
+
+```text
+cart.userId → users._id
+cart.items.productId → products.id
+
+orders.userId → users._id
+orders.items.productId → products.id
+```
+
+---
+
+### 7. Backend Integration Note
+
+- Groq AI parser is now the source of structured intent JSON.
+- Backend should consume the parsed output directly.
+- Backend filtering should use `category`, `occasion`, `color`, `priceMin`, and `priceMax`.
+- Current API request/response format remains stable.
+- Frontend integration should not depend on storage implementation.
+
+---
+
+## Version
+
+**Contract Version: v0.7**
+
+## Reason
+
+- AI parser schema updated
+- `occasion` added for future filtering
+- `priceMin` added for better range filtering
+- No breaking API changes
+
+
+
+
+
+
+
+
 # API Contract v0.6 Update
 
 ## Changes from v0.5
