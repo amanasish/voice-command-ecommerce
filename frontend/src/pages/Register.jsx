@@ -1,4 +1,6 @@
 import { Link } from "react-router-dom";
+import { useState } from "react";
+import { registerUser } from "../api/authApi.js";
 
 const styles = {
   page: {
@@ -104,6 +106,51 @@ const styles = {
 };
 
 export default function Register() {
+  const [form, setForm] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
+  const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  function handleChange(event) {
+    const { name, value } = event.target;
+    setForm((current) => ({
+      ...current,
+      [name]: value,
+    }));
+  }
+
+  async function handleSubmit(event) {
+    event.preventDefault();
+    setLoading(true);
+    setMessage("");
+
+    if (form.password !== form.confirmPassword) {
+      setMessage("Passwords do not match");
+      setLoading(false);
+      return;
+    }
+    
+    try {
+      const result = await registerUser({
+        name: `${form.firstName} ${form.lastName}`.trim(),
+        firstName: form.firstName,
+        lastName: form.lastName,
+        email: form.email,
+        password: form.password,
+      });
+      setMessage(result.message || "Registration successful");
+    } catch (error) {
+      setMessage(error.message || "Registration failed");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
     <div style={styles.page}>
       <section style={styles.panel}>
@@ -111,7 +158,7 @@ export default function Register() {
           <h2 style={styles.title}>Create account</h2>
           <p style={styles.subtitle}>Join the store and start using voice search.</p>
 
-          <form>
+          <form onSubmit={handleSubmit}>
             <div style={styles.grid}>
               <div style={styles.field}>
                 <label style={styles.label} htmlFor="firstName">
@@ -119,9 +166,12 @@ export default function Register() {
                 </label>
                 <input
                   id="firstName"
+                  name="firstName"
                   type="text"
-                  placeholder="Aman"
+                  placeholder="Enter"
                   style={styles.input}
+                  value={form.firstName}
+                  onChange={handleChange}
                 />
               </div>
               <div style={styles.field}>
@@ -130,9 +180,12 @@ export default function Register() {
                 </label>
                 <input
                   id="lastName"
+                  name="lastName"
                   type="text"
-                  placeholder="Gupta"
+                  placeholder="Enter"
                   style={styles.input}
+                  value={form.lastName}
+                  onChange={handleChange}
                 />
               </div>
             </div>
@@ -143,9 +196,12 @@ export default function Register() {
               </label>
               <input
                 id="email"
+                name="email"
                 type="email"
                 placeholder="you@example.com"
                 style={styles.input}
+                value={form.email}
+                onChange={handleChange}
               />
             </div>
 
@@ -155,9 +211,12 @@ export default function Register() {
               </label>
               <input
                 id="password"
+                name="password"
                 type="password"
                 placeholder="Create a password"
                 style={styles.input}
+                value={form.password}
+                onChange={handleChange}
               />
             </div>
 
@@ -167,16 +226,25 @@ export default function Register() {
               </label>
               <input
                 id="confirmPassword"
+                name="confirmPassword"
                 type="password"
                 placeholder="Repeat your password"
                 style={styles.input}
+                value={form.confirmPassword}
+                onChange={handleChange}
               />
             </div>
 
-            <button type="submit" style={styles.button}>
-              Create account
+            <button type="submit" style={styles.button} disabled={loading}>
+              {loading ? "Creating account..." : "Create account"}
             </button>
           </form>
+
+          {message ? (
+            <p style={{ marginTop: "1rem", color: "#4c1d95", fontWeight: 600 }}>
+              {message}
+            </p>
+          ) : null}
 
           <p style={styles.footer}>
             Already have an account?{" "}
