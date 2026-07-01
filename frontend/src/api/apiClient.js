@@ -1,0 +1,159 @@
+import * as mockApi from "./mockApi.js";
+
+const USE_MOCK = import.meta.env.VITE_USE_MOCK !== "false";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+
+if (import.meta.env.DEV) {
+  console.log(`[apiClient] mode: ${USE_MOCK ? "mock" : `backend (${API_URL})`}`);
+}
+
+let lastOrder = null;
+
+function normalizeImageUrl(imageUrl) {
+  if (!imageUrl || USE_MOCK) return imageUrl;
+  if (imageUrl.startsWith("http")) return imageUrl;
+  if (imageUrl.startsWith("/")) return `${API_URL}${imageUrl}`;
+  return imageUrl;
+}
+
+function normalizeProduct(product) {
+  return {
+    ...product,
+    imageUrl: normalizeImageUrl(product.imageUrl),
+  };
+}
+
+function normalizeCart(cart = []) {
+  return cart.map((item) => ({
+    ...item,
+    imageUrl: normalizeImageUrl(item.imageUrl),
+  }));
+}
+
+async function request(path, options = {}) {
+  const response = await fetch(`${API_URL}${path}`, {
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+      ...(options.headers || {}),
+    },
+    ...options,
+  });
+
+  const data = await response.json().catch(() => ({
+    success: false,
+    error: "Invalid JSON response from server",
+  }));
+
+  if (!response.ok && data.success !== false) {
+    return { success: false, error: data.error || `Request failed (${response.status})` };
+  }
+
+  return data;
+}
+
+export async function filterProducts(intent) {
+  if (USE_MOCK) return mockApi.filterProducts(intent);
+
+  const result = await request("/products/filter", {
+    method: "POST",
+    body: JSON.stringify({
+      action: "filter",
+      category: intent.category,
+      color: intent.color,
+      priceMin: intent.priceMin,
+      priceMax: intent.priceMax,
+    }),
+  });
+
+  if (result.success && Array.isArray(result.products)) {
+    result.products = result.products.map(normalizeProduct);
+  }
+
+  return result;
+}
+
+export async function addToCart({ productId, quantity = 1 }) {
+  if (USE_MOCK) return mockApi.addToCart({ productId, quantity });
+
+  const result = await request("/cart/add", {
+    method: "POST",
+    body: JSON.stringify({
+      action: "addToCart",
+      productId,
+      quantity,
+    }),
+  });
+
+  if (result.success && Array.isArray(result.cart)) {
+    result.cart = normalizeCart(result.cart);
+  }
+
+  return result;
+}
+
+export async function removeFromCart({ productId }) {
+  if (USE_MOCK) return mockApi.removeFromCart({ productId });
+
+  const result = await request("/cart/remove", {
+    method: "POST",
+    body: JSON.stringify({
+      action: "removeFromCart",
+      productId,
+    }),
+  });
+
+  if (result.success && Array.isArray(result.cart)) {
+    result.cart = normalizeCart(result.cart);
+  }
+
+  return result;
+}
+
+export async function getCart() {
+  if (USE_MOCK) return mockApi.getCart();
+
+  const result = await request("/cart", { method: "GET" });
+
+  if (result.success && Array.isArray(result.cart)) {
+    result.cart = normalizeCart(result.cart);
+  }
+
+  return result;
+}
+
+export async function checkout() {
+  if (USE_MOCK) {
+    const result = mockApi.checkout();
+    lastOrder = mockApi.getLastOrder();
+    return result;
+  }
+
+  const result = await request("/checkout", {
+    method: "POST",
+    body: JSON.stringify({ action: "checkout" }),
+  });
+
+  if (result.success && result.order) {
+    lastOrder = {
+      ...result.order,
+      items: normalizeCart(result.order.items),
+    };
+  }
+
+  return result;
+}
+
+export function getLastOrder() {
+  if (USE_MOCK) return mockApi.getLastOrder();
+  return lastOrder;
+}
+
+export async function getCartSnapshot() {
+  const result = await getCart();
+  return result.success ? result.cart : [];
+}
+
+export function resetCart() {
+  if (USE_MOCK) mockApi.resetCart();
+}
