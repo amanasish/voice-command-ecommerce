@@ -1,18 +1,14 @@
 // data/products.js
 //
-// WHY THIS FILE EXISTS:
-// Right now we don't have MongoDB connected yet (that comes later).
-// So we keep our product list as a simple JavaScript array, sitting in memory.
-// This lets us build and test our API TODAY without waiting for the database.
-//
-// IMPORTANT: Every field name here matches EXACTLY what is written in
-// docs/api-contract.md -- id, title, category, color, price, imageUrl, stock
+// Temporary in-memory product data.
+// Updated for API Contract v0.7 with occasion support.
 
 const products = [
   {
     id: "p101",
     title: "Blue Cotton Shirt",
     category: "shirts",
+    occasion: ["casual", "party"],
     color: "blue",
     price: 899,
     imageUrl: "/images/p101.jpg",
@@ -22,6 +18,7 @@ const products = [
     id: "p102",
     title: "Red Denim Jeans",
     category: "jeans",
+    occasion: ["casual"],
     color: "red",
     price: 1299,
     imageUrl: "/images/p102.jpg",
@@ -31,6 +28,7 @@ const products = [
     id: "p103",
     title: "Blue Formal Shirt",
     category: "shirts",
+    occasion: ["formal", "office"],
     color: "blue",
     price: 750,
     imageUrl: "/images/p103.jpg",
@@ -40,6 +38,7 @@ const products = [
     id: "p104",
     title: "Black Kurta",
     category: "kurtas",
+    occasion: ["diwali", "festive", "wedding"],
     color: "black",
     price: 1100,
     imageUrl: "/images/p104.jpg",
@@ -49,6 +48,7 @@ const products = [
     id: "p105",
     title: "Blue Kurta",
     category: "kurtas",
+    occasion: ["diwali", "party", "festive"],
     color: "blue",
     price: 1200,
     imageUrl: "/images/p105.jpg",
@@ -58,6 +58,7 @@ const products = [
     id: "p106",
     title: "Green T-Shirt",
     category: "shirts",
+    occasion: ["casual"],
     color: "green",
     price: 499,
     imageUrl: "/images/p106.jpg",
@@ -67,6 +68,7 @@ const products = [
     id: "p107",
     title: "Premium Blue Shirt",
     category: "shirts",
+    occasion: ["party", "formal"],
     color: "blue",
     price: 1500,
     imageUrl: "/images/p107.jpg",
@@ -74,7 +76,4 @@ const products = [
   }
 ];
 
-// We "export" this array so other files (like our controller) can import
-// and use it. Think of "module.exports" as putting this array in a box
-// labeled "products.js" that any other file can open using require().
 module.exports = products;
