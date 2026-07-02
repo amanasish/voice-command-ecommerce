@@ -70,6 +70,39 @@ textarea {
   font-weight: 600;
 }
 
+.navbar-user {
+  font-size: 0.9rem;
+  color: #e9d5ff;
+  font-weight: 500;
+}
+
+.navbar-login-link {
+  font-weight: 600;
+  color: #fbbf24;
+  text-decoration: none;
+}
+
+.navbar-login-link:hover {
+  text-decoration: underline;
+}
+
+.navbar-logout-btn {
+  background: transparent;
+  color: #fca5a5;
+  border: 1px solid rgba(252, 165, 165, 0.4);
+  padding: 0.35rem 0.85rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.navbar-logout-btn:hover {
+  background: rgba(220, 38, 38, 0.15);
+  color: #f87171;
+}
+
 /* Pages */
 .page {
   max-width: 1100px;

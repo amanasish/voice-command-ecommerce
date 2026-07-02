@@ -1,4 +1,5 @@
 import * as mockApi from "./mockApi.js";
+import { getAuthToken } from "./authApi.js";
 
 const USE_MOCK = import.meta.env.VITE_USE_MOCK !== "false";
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
@@ -31,10 +32,14 @@ function normalizeCart(cart = []) {
 }
 
 async function request(path, options = {}) {
+  const token = getAuthToken();
+  const authHeader = token ? { Authorization: `Bearer ${token}` } : {};
+
   const response = await fetch(`${API_URL}${path}`, {
     headers: {
       Accept: "application/json",
       "Content-Type": "application/json",
+      ...authHeader,
       ...(options.headers || {}),
     },
     ...options,

@@ -1,6 +1,7 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useState } from "react";
 import { loginUser } from "../api/authApi.js";
+import { useAuth } from "../context/AuthContext.jsx";
 
 const styles = {
   page: {
@@ -110,6 +111,12 @@ const styles = {
 };
 
 export default function Login() {
+  const { login } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+  // Redirect back to the page the user originally tried to visit, or home
+  const from = location.state?.from?.pathname || "/";
+
   const [form, setForm] = useState({
     email: "",
     password: "",
@@ -137,7 +144,9 @@ export default function Login() {
         password: form.password,
         rememberMe: form.rememberMe,
       });
-      setMessage(result.message || "Login successful");
+      // Sync global auth state, then navigate to intended destination
+      login(result);
+      navigate(from, { replace: true });
     } catch (error) {
       setMessage(error.message || "Login failed");
     } finally {

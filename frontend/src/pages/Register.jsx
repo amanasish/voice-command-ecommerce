@@ -1,6 +1,7 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useState } from "react";
 import { registerUser } from "../api/authApi.js";
+import { useAuth } from "../context/AuthContext.jsx";
 
 const styles = {
   page: {
@@ -106,6 +107,12 @@ const styles = {
 };
 
 export default function Register() {
+  const { login } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+  // Redirect back to the page the user originally tried to visit, or home
+  const from = location.state?.from?.pathname || "/";
+
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
@@ -143,7 +150,9 @@ export default function Register() {
         email: form.email,
         password: form.password,
       });
-      setMessage(result.message || "Registration successful");
+      // Sync global auth state, then navigate to intended destination
+      login(result);
+      navigate(from, { replace: true });
     } catch (error) {
       setMessage(error.message || "Registration failed");
     } finally {
