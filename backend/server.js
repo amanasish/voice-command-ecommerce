@@ -1,4 +1,5 @@
-// server.js — entry point for the backend API
+// server.js
+// Entry point for the backend API
 
 require("dotenv").config();
 
@@ -9,32 +10,43 @@ const connectDB = require("./config/db");
 const productRoutes = require("./routes/productRoutes");
 const cartRoutes = require("./routes/cartRoutes");
 const checkoutRoutes = require("./routes/checkoutRoutes");
+const authRoutes = require("./routes/authRoutes"); // Authentication routes
 
 const app = express();
 
+// Middlewares
 app.use(cors());
 app.use(express.json());
 
-// Serves files inside the "public" folder directly via URL.
-// Example: public/images/p101.jpg becomes accessible at:
-//   http://localhost:3000/images/p101.jpg
+// Serve static files
+// Example:
+// public/images/p101.jpg
+// -> http://localhost:3000/images/p101.jpg
 app.use(express.static("public"));
 
+// Routes
 app.use("/products", productRoutes);
 app.use("/cart", cartRoutes);
 app.use("/checkout", checkoutRoutes);
+app.use("/auth", authRoutes);
 
+// Health Check
 app.get("/", (req, res) => {
-  res.json({ message: "Backend is alive and running!" });
+  res.json({
+    success: true,
+    message: "Backend is alive and running!",
+  });
 });
 
 const PORT = process.env.PORT || 3000;
 
+// Connect MongoDB and Start Server
 const startServer = async () => {
   try {
     await connectDB();
+
     app.listen(PORT, () => {
-      console.log(`Server running at http://localhost:${PORT}`);
+      console.log(`🚀 Server running at http://localhost:${PORT}`);
     });
   } catch (err) {
     console.error("Failed to start server:", err.message);
