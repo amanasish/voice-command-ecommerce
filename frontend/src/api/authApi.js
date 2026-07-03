@@ -1,4 +1,4 @@
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+const API_URL = import.meta.env.VITE_API_URL || "https://voice-command-ecommerce-backend.onrender.com";
 const AUTH_TOKEN_KEY = "voice-commerce-auth-token";
 const AUTH_USER_KEY = "voice-commerce-auth-user";
 
