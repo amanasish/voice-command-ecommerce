@@ -2,7 +2,7 @@ import { createContext, useContext, useState, useCallback, useEffect } from "rea
 import { dummyProducts } from "../data/dummyProducts.js";
 import { filterProducts } from "../api/apiClient.js";
 
-const USE_MOCK = import.meta.env.VITE_USE_MOCK !== "false";
+const USE_MOCK = import.meta.env.VITE_USE_MOCK === "true";
 
 const ProductContext = createContext(null);
 

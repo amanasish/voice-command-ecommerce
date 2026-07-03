@@ -1,7 +1,7 @@
 import * as mockApi from "./mockApi.js";
 import { getAuthToken } from "./authApi.js";
 
-const USE_MOCK = import.meta.env.VITE_USE_MOCK !== "false";
+const USE_MOCK = import.meta.env.VITE_USE_MOCK === "true";
 const API_URL = import.meta.env.VITE_API_URL || "https://voice-command-ecommerce-backend.onrender.com";
 
 if (import.meta.env.DEV) {
