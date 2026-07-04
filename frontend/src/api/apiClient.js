@@ -162,3 +162,26 @@ export async function getCartSnapshot() {
 export function resetCart() {
   if (USE_MOCK) mockApi.resetCart();
 }
+
+/**
+ * Send a raw transcript to the backend NLP endpoint.
+ * The backend tries Groq first and falls back to the regex parser.
+ *
+ * Returns: { intent, fallback? }
+ *   intent   — the parsed intent object
+ *   fallback — true when the regex fallback was used (Groq unavailable)
+ *
+ * Throws if the backend itself is unreachable (caller handles the local fallback).
+ */
+export async function parseTranscript(transcript) {
+  const result = await request("/nlp/parse", {
+    method: "POST",
+    body: JSON.stringify({ transcript }),
+  });
+
+  if (!result.success) {
+    throw new Error(result.error || "NLP parse failed");
+  }
+
+  return { intent: result.intent, fallback: result.fallback === true };
+}

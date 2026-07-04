@@ -73,6 +73,15 @@ export default function VoiceControl() {
         </button>
       </div>
 
+      {/* Fallback parser warning */}
+      {lastIntent?._fallback && (
+        <p className="parser-fallback-warning">
+          {lastIntent._fallback === "offline"
+            ? "⚠️ Backend unreachable — using basic (offline) parser"
+            : "⚠️ Groq AI unavailable — using basic parser"}
+        </p>
+      )}
+
       <p className="status">
         Status: <strong>{isListening ? "Listening..." : "Not listening"}</strong>
       </p>
@@ -103,7 +112,7 @@ export default function VoiceControl() {
       <div className="voice-hints">
         <p>
           Try: &quot;show me blue shirts&quot; · &quot;add product p101 to cart&quot; ·
-          &quot;show my cart&quot; · &quot;checkout&quot;
+          &quot;show my cart&quot; · &quot;checkout&quot; · &quot;party wear kurtas under 500&quot;
         </p>
       </div>
     </div>

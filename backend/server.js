@@ -11,6 +11,7 @@ const productRoutes = require("./routes/productRoutes");
 const cartRoutes = require("./routes/cartRoutes");
 const checkoutRoutes = require("./routes/checkoutRoutes");
 const authRoutes = require("./routes/authRoutes"); // Authentication routes
+const nlpRoutes = require("./routes/nlpRoutes");   // NLP / Groq parser
 
 const app = express();
 
@@ -29,6 +30,7 @@ app.use("/products", productRoutes);
 app.use("/cart", cartRoutes);
 app.use("/checkout", checkoutRoutes);
 app.use("/auth", authRoutes);
+app.use("/nlp", nlpRoutes);
 
 // Health Check
 app.get("/", (req, res) => {
