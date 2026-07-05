@@ -5,6 +5,7 @@ import {
   getCart,
   checkout,
 } from "./apiClient.js";
+import { getAuthToken } from "./authApi.js";
 
 export async function executeIntent(intent, context = {}) {
   if (!intent?.action) {
@@ -36,9 +37,21 @@ export async function executeIntent(intent, context = {}) {
     }
 
     case "viewCart":
+      if (!getAuthToken()) {
+        return {
+          success: false,
+          error: "Please log in to view your cart.",
+        };
+      }
       return getCart();
 
     case "checkout":
+      if (!getAuthToken()) {
+        return {
+          success: false,
+          error: "Please log in to checkout.",
+        };
+      }
       return checkout();
 
     default:

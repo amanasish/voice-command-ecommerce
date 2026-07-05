@@ -60,6 +60,30 @@ function normalizeIntent(intent) {
   return normalized;
 }
 
+function finaliseAction(intent, transcript) {
+  if (!intent || typeof intent !== "object") {
+    return intent;
+  }
+
+  const text = String(transcript || "").toLowerCase();
+
+  if (intent.action === "viewCart" && !/\bcart\b/.test(text)) {
+    if (intent.category || intent.occasion || intent.color || intent.priceMin != null || intent.priceMax != null) {
+      intent.action = "filter";
+    } else {
+      intent.action = null;
+    }
+  }
+
+  if (!intent.action) {
+    if (intent.category || intent.occasion || intent.color || intent.priceMin != null || intent.priceMax != null) {
+      intent.action = "filter";
+    }
+  }
+
+  return intent;
+}
+
 // ============================================================
 // Helper: call Groq API and return parsed intent object
 // ============================================================
@@ -145,7 +169,10 @@ const parseTranscript = async (req, res) => {
   // --- Try Groq first ---
   if (GROQ_API_KEY) {
     try {
-      const intent = normalizeIntent(await callGroq(transcript.trim()));
+      const intent = finaliseAction(
+        normalizeIntent(await callGroq(transcript.trim())),
+        transcript.trim()
+      );
       return res.json({ success: true, intent });
     } catch (err) {
       console.warn(`[nlp] Groq failed: ${err.message}. Falling back to regex parser.`);
@@ -157,7 +184,10 @@ const parseTranscript = async (req, res) => {
 
   // --- Regex fallback ---
   try {
-    const intent = normalizeIntent(parseIntent(transcript.trim()));
+    const intent = finaliseAction(
+      normalizeIntent(parseIntent(transcript.trim())),
+      transcript.trim()
+    );
     return res.json({ success: true, intent, fallback: true });
   } catch (err) {
     console.error("[nlp] Regex parser also failed:", err.message);
