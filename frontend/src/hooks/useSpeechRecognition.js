@@ -41,7 +41,11 @@ export function useSpeechRecognition() {
       let finalText = "";
       let interimText = "";
 
-      for (let i = 0; i < event.results.length; i++) {
+      // IMPORTANT: start at event.resultIndex, not 0.
+      // event.results holds ALL results from the whole session.
+      // Starting at 0 would re-process old words every time a new one arrives,
+      // causing the transcript to double/triple up.
+      for (let i = event.resultIndex; i < event.results.length; i++) {
         const result = event.results[i];
         if (result.isFinal) {
           finalText += result[0].transcript + " ";
