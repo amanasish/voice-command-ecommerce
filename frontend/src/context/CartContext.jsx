@@ -1,9 +1,11 @@
 import { createContext, useContext, useState, useCallback } from "react";
 import { getCart } from "../api/apiClient.js";
+import { useAuth } from "./AuthContext.jsx";
 
 const CartContext = createContext(null);
 
 export function CartProvider({ children }) {
+  const { isLoggedIn } = useAuth();
   const [cartItems, setCartItems] = useState([]);
   const [cartOpen, setCartOpen] = useState(false);
 
@@ -14,16 +16,22 @@ export function CartProvider({ children }) {
   }, []);
 
   const refreshCart = useCallback(async () => {
+    if (!isLoggedIn) {
+      setCartItems([]);
+      return;
+    }
     const result = await getCart();
     if (result.success) {
       setCartItems(result.cart || []);
     }
-  }, []);
+  }, [isLoggedIn]);
 
   const openCart = useCallback(() => setCartOpen(true), []);
   const closeCart = useCallback(() => setCartOpen(false), []);
 
-  const cartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+  const cartCount = isLoggedIn
+    ? cartItems.reduce((sum, item) => sum + item.quantity, 0)
+    : 0;
   const lastCartProductId =
     cartItems.length > 0 ? cartItems[cartItems.length - 1].productId : null;
 

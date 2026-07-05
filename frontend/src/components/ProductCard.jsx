@@ -1,14 +1,19 @@
 import { useProducts } from "../context/ProductContext.jsx";
 import { useCart } from "../context/CartContext.jsx";
+import { useAuth } from "../context/AuthContext.jsx";
 import { addToCart } from "../api/apiClient.js";
 
 export default function ProductCard({ product }) {
   const { selectProduct, selectedProductId } = useProducts();
   const { updateCartFromResult } = useCart();
+  const { isLoggedIn } = useAuth();
 
   const isSelected = selectedProductId === product.id;
 
   const handleAddToCart = async () => {
+    if (!isLoggedIn) {
+      return;
+    }
     selectProduct(product.id);
     const result = await addToCart({ productId: product.id, quantity: 1 });
     if (result.success) {

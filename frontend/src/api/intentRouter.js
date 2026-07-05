@@ -17,6 +17,12 @@ export async function executeIntent(intent, context = {}) {
       return filterProducts(intent);
 
     case "addToCart": {
+      if (!getAuthToken()) {
+        return {
+          success: false,
+          error: "Please log in to add items to your cart.",
+        };
+      }
       const productId = intent.productId || context.selectedProductId;
       if (!productId) {
         return {
