@@ -10,6 +10,8 @@
 
 const { parseIntent } = require("../utils/regexParser");
 
+const ALLOWED_CATEGORIES = new Set(["shirts", "jeans", "kurtas", "phones"]);
+
 const GROQ_API_KEY = process.env.GROQ_API_KEY;
 const GROQ_MODEL = process.env.GROQ_MODEL || "llama-3.3-70b-versatile";
 const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
@@ -27,6 +29,35 @@ function extractJson(text) {
     if (!match) throw new Error("Groq response did not contain valid JSON.");
     return JSON.parse(match[0]);
   }
+}
+
+function normalizeIntent(intent) {
+  if (!intent || typeof intent !== "object") {
+    return intent;
+  }
+
+  const normalized = { ...intent };
+
+  if (
+    normalized.category &&
+    !ALLOWED_CATEGORIES.has(String(normalized.category).toLowerCase())
+  ) {
+    normalized.category = null;
+  }
+
+  if (normalized.category) {
+    normalized.category = String(normalized.category).toLowerCase();
+  }
+
+  if (normalized.occasion) {
+    normalized.occasion = String(normalized.occasion).toLowerCase();
+  }
+
+  if (normalized.color) {
+    normalized.color = String(normalized.color).toLowerCase();
+  }
+
+  return normalized;
 }
 
 // ============================================================
@@ -114,7 +145,7 @@ const parseTranscript = async (req, res) => {
   // --- Try Groq first ---
   if (GROQ_API_KEY) {
     try {
-      const intent = await callGroq(transcript.trim());
+      const intent = normalizeIntent(await callGroq(transcript.trim()));
       return res.json({ success: true, intent });
     } catch (err) {
       console.warn(`[nlp] Groq failed: ${err.message}. Falling back to regex parser.`);
@@ -126,7 +157,7 @@ const parseTranscript = async (req, res) => {
 
   // --- Regex fallback ---
   try {
-    const intent = parseIntent(transcript.trim());
+    const intent = normalizeIntent(parseIntent(transcript.trim()));
     return res.json({ success: true, intent, fallback: true });
   } catch (err) {
     console.error("[nlp] Regex parser also failed:", err.message);
