@@ -65,6 +65,7 @@ export async function filterProducts(intent) {
     body: JSON.stringify({
       action: "filter",
       category: intent.category,
+      occasion: intent.occasion,
       color: intent.color,
       priceMin: intent.priceMin,
       priceMax: intent.priceMax,

@@ -5,6 +5,7 @@
 
 const CATEGORIES = ["shirts", "jeans", "kurtas", "phones"];
 const COLORS = ["red", "blue", "black"];
+const OCCASIONS = ["party", "wedding", "office", "casual", "festive", "diwali", "eid", "christmas"];
 
 const ACTIONS = {
   filter: ["show", "find", "search"],
@@ -68,6 +69,13 @@ function parseIntent(transcript) {
     }
   }
 
+  for (const occasion of OCCASIONS) {
+    if (text.includes(occasion)) {
+      intent.occasion = occasion;
+      break;
+    }
+  }
+
   const price = text.match(PRICE_MAX_REGEX)?.[1];
   if (price) intent.priceMax = Number(price);
 
@@ -88,7 +96,12 @@ function parseIntent(transcript) {
   if (!intent.action) {
     if (intent.productId && /\badd\b/.test(text) && /\bto cart\b/.test(text)) {
       intent.action = "addToCart";
-    } else if (intent.category || intent.color || intent.priceMax != null) {
+    } else if (
+      intent.category ||
+      intent.occasion ||
+      intent.color ||
+      intent.priceMax != null
+    ) {
       intent.action = "filter";
     }
   }
